@@ -62,21 +62,31 @@ public class Main {
         et.commit();
 
         // Hämta alla böcker av en specifik författare (JPQL)
+        Author author = em.createQuery("select a from Author a where a.name = :name", Author.class)
+                .setParameter("name", "Lukas")
+                .getSingleResult();
+
+        author.getWrittenBooks().forEach(System.out::println);
+
         List<Book> booksByAuthor = em
-                .createQuery("select b from Author a join a.writtenBooks b where a.name = :name")
+                .createQuery("select b from Author a join a.writtenBooks b where a.name = :name", Book.class)
                 .setParameter("name", "Lukas")
                 .getResultList();
         booksByAuthor.forEach(System.out::println);
 
         // Hämta alla läsare( readers) som har läst en viss bok (member of)
-        Book science = em.find(Book.class, 4L);
-        List<Reader> readers = em.createQuery("select r from Reader r where :book member of r.readBooks")
+        Book science = em.createQuery("select b from Book b where b.title = :title", Book.class)
+                .setParameter("title", "Quick Science Cool Facts")
+                .getSingleResult();
+
+        List<Reader> readers = em.createQuery("select r from Reader r where :book member of r.readBooks", Reader.class)
                 .setParameter("book", science)
                 .getResultList();
         readers.forEach(x -> System.out.println(x.getName()));
 
         // Hämta författare vars böcker har lästs av minst en läsare (join)
-        List<Author> authors = em.createQuery("select distinct a from Author a join a.writtenBooks b join b.readers r")
+        List<Author> authors = em
+                .createQuery("select distinct a from Author a join a.writtenBooks b join b.readers r", Author.class)
                 .getResultList();
         authors.forEach(x -> System.out.println(x.getName()));
 
@@ -95,7 +105,7 @@ public class Main {
 
         }
         // Named Query - Hämta böcker efter genre
-        List<Book> booksInGenre = em.createNamedQuery("Book.searchByGenre")
+        List<Book> booksInGenre = em.createNamedQuery("Book.searchByGenre", Book.class)
                 .setParameter("genre", "Hobby")
                 .getResultList();
         booksInGenre.forEach(System.out::println);
