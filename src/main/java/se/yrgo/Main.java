@@ -68,6 +68,7 @@ public class Main {
 
         author.getWrittenBooks().forEach(System.out::println);
 
+        // Alternativt på detta sätt
         List<Book> booksByAuthor = em
                 .createQuery("select b from Author a join a.writtenBooks b where a.name = :name", Book.class)
                 .setParameter("name", "Lukas")
